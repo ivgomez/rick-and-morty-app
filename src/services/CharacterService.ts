@@ -6,8 +6,13 @@ class CharacterCoreService {
     this.baseService = new BaseService(process.env.API_URL);
   }
 
-  async getCharacter(url: string) {
+  async getCharacters(url: string) {
     const response = await this.baseService.get(url);
+    return response.data;
+  }
+
+  async getCharacter(id: string) {
+    const response = await this.baseService.get(`/character/${id}`);
     return response.data;
   }
 }

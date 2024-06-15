@@ -1,8 +1,9 @@
-import {NavigationProp} from '@react-navigation/native';
+import {NavigationProp, RouteProp} from '@react-navigation/native';
 
 type RootStackParamList = {
   Home: undefined;
-  Details: undefined;
+  Details: {id: string};
 };
 
 export type RootStackNavigationProp = NavigationProp<RootStackParamList>;
+export type DetailsRouteProp = RouteProp<RootStackParamList, 'Details'>;

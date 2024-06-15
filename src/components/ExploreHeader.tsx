@@ -1,15 +1,30 @@
 import React from 'react';
 import {View, TextInput, StyleSheet} from 'react-native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {useAppDispatch} from '@hooks/hooks';
+import {filterCharacters} from 'store/slices/characterSlice';
 
-const ExploreHeader = ({}) => {
+const ExploreHeader = () => {
+  const dispatch = useAppDispatch();
+
+  const handleFilterChange = (text: string) => {
+    dispatch(filterCharacters(text));
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.inputContainer}>
+          <FontAwesome
+            name="search"
+            size={20}
+            color="#000"
+            style={styles.icon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Search..."
-            onChangeText={() => {}}
+            onChangeText={handleFilterChange}
           />
         </View>
       </View>
@@ -19,33 +34,29 @@ const ExploreHeader = ({}) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#8f8787',
+    backgroundColor: '#7eff84',
     paddingBottom: 10,
   },
   headerContainer: {
-    backgroundColor: '#fff',
-    height: 130,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: {
-      width: 1,
-      height: 10,
-    },
-  },
-  inputContainer: {
-    display: 'flex',
-    flexDirection: 'row',
+    height: 55,
+    marginTop: 65,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  input: {
-    height: 40,
-    width: '90%',
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 20,
     paddingHorizontal: 10,
+    width: '90%',
+  },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 40,
   },
 });
 

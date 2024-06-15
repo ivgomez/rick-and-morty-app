@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -7,13 +7,12 @@ import {
   View,
 } from 'react-native';
 import {useAppDispatch, useAppSelector} from '@hooks/hooks';
-import {getCharacter} from 'store/slices/characterSlice';
+import {getCharacters} from 'store/slices/characterSlice';
 import {RootStackNavigationProp} from 'models/RootStackNavigationProps';
 import Card from '@ui/molecules/Card';
 import {Character} from '@models/Character';
 import Text from '@ui/atoms/Text';
-import Button from '@ui/atoms/Button';
-import ExploreHeader from '@components/ExploreHeader';
+import ScrollToTopButton from 'ui/molecules/ScrollToTopButton';
 
 type Props = {
   navigation: RootStackNavigationProp;
@@ -22,40 +21,49 @@ type Props = {
 const Home: React.FC<Props> = ({navigation}) => {
   const dispatch = useAppDispatch();
   const flatListRef = useRef<FlatList<Character>>(null);
-  const {results, info} = useAppSelector(state => state.character);
+  const [showScrollButton, setShowScrollButton] = useState<boolean>(false);
+  const {charactersFiltered, info} = useAppSelector(state => state.character);
 
   useEffect(() => {
-    dispatch(getCharacter());
+    dispatch(getCharacters());
   }, [dispatch]);
 
   const loadMoreCharacters = () => {
     if (info.next !== null) {
-      dispatch(getCharacter());
+      dispatch(getCharacters());
     }
+  };
+
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setShowScrollButton(offsetY > 300);
   };
 
   const scrollToTop = () => {
     flatListRef.current?.scrollToOffset({animated: true, offset: 0});
   };
 
-  const renderItem = ({item}: {item: Character}) => <Card character={item} />;
+  const renderItem = ({item}: {item: Character}) => (
+    <Card
+      character={item}
+      onPress={() => navigation.navigate('Details', {id: item.id.toString()})}
+    />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={results}
+        data={charactersFiltered}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         onEndReached={loadMoreCharacters}
         onEndReachedThreshold={0.5}
         initialNumToRender={10}
+        onScroll={handleScroll}
         ListFooterComponent={info.next ? <Text>Loading...</Text> : null}
       />
-      <View style={styles.buttonContainer}>
-        <Button title="Load More" onPress={loadMoreCharacters} />
-        <Button title="Up" onPress={scrollToTop} />
-      </View>
+      <ScrollToTopButton onPress={scrollToTop} visible={showScrollButton} />
     </SafeAreaView>
   );
 };
