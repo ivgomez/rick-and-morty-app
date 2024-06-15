@@ -1,10 +1,31 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {characterService} from '@services/CharacterService';
+import {Info} from '@models/Info';
+import {Character} from '@models/Character';
 
 const name: string = 'character.action';
 
-const initialState = {
+interface stateModel {
+  loading: boolean;
+  error: string;
+  data: {
+    info: Info;
+    results: Character[];
+  };
+}
+
+const initialState: stateModel = {
   loading: false,
+  error: '',
+  data: {
+    info: {
+      count: 0,
+      pages: 0,
+      next: '',
+      prev: '',
+    },
+    results: [],
+  },
 };
 
 export const getCharacter = createAsyncThunk(
@@ -23,12 +44,14 @@ export const characterSlice = createSlice({
       state.loading = true;
     });
 
-    builder.addCase(getCharacter.fulfilled, state => {
+    builder.addCase(getCharacter.fulfilled, (state, {payload}) => {
       state.loading = false;
+      state.data = payload;
     });
 
     builder.addCase(getCharacter.rejected, state => {
       state.loading = false;
+      state.error = 'error getting answer';
     });
   },
   reducers: {},
