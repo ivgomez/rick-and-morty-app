@@ -1,26 +1,20 @@
 import React from 'react';
 import {TextInput, StyleSheet} from 'react-native';
 
-type InputFieldProps = {
+type Props = {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
 };
 
-const InputField: React.FC<InputFieldProps> = ({
-  placeholder,
-  value,
-  onChangeText,
-}) => {
-  return (
-    <TextInput
-      style={styles.input}
-      placeholder={placeholder}
-      value={value}
-      onChangeText={onChangeText}
-    />
-  );
-};
+const InputField: React.FC<Props> = ({placeholder, value, onChangeText}) => (
+  <TextInput
+    style={styles.input}
+    placeholder={placeholder}
+    value={value}
+    onChangeText={onChangeText}
+  />
+);
 
 const styles = StyleSheet.create({
   input: {

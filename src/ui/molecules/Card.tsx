@@ -25,7 +25,9 @@ const Card: React.FC<CardProps> = ({character, onPress}) => {
     <TouchableOpacity onPress={onPress} style={styles.card}>
       <Image source={{uri: character.image}} style={styles.image} />
       <View style={styles.info}>
-        <Text style={styles.name}>{character.name}</Text>
+        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+          {character.name}
+        </Text>
         <Text style={styles.status}>{character.status}</Text>
       </View>
     </TouchableOpacity>
@@ -44,6 +46,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowRadius: 8,
     elevation: 5,
+    alignItems: 'center',
   },
   image: {
     width: 80,
@@ -53,10 +56,12 @@ const styles = StyleSheet.create({
   info: {
     marginLeft: 16,
     justifyContent: 'center',
+    flex: 1,
   },
   name: {
     fontSize: 18,
     fontWeight: 'bold',
+    flexShrink: 1,
   },
   status: {
     marginTop: 4,

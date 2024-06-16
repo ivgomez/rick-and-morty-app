@@ -1,30 +1,23 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import {TouchableOpacity, StyleSheet, Text} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-type ActionButtonProps = {
+type Props = {
   title: string;
   icon: string;
   onPress: () => void;
   disabled?: boolean;
 };
 
-const ActionButton: React.FC<ActionButtonProps> = ({
-  title,
-  icon,
-  onPress,
-  disabled = false,
-}) => {
-  return (
-    <TouchableOpacity
-      style={[styles.button, disabled && styles.buttonDisabled]}
-      onPress={onPress}
-      disabled={disabled}>
-      <MaterialIcons name={icon} size={20} color="#fff" />
-      <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-  );
-};
+const ActionButton: React.FC<Props> = ({title, icon, onPress, disabled}) => (
+  <TouchableOpacity
+    style={[styles.button, disabled && styles.buttonDisabled]}
+    onPress={onPress}
+    disabled={disabled}>
+    <MaterialIcons name={icon} size={20} color="#fff" />
+    <Text style={styles.buttonText}>{title}</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   button: {
@@ -32,9 +25,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#007BFF',
     borderRadius: 5,
     padding: 5,
+    paddingLeft: 2,
+    paddingRight: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 5,
+    width: 90,
   },
   buttonDisabled: {
     backgroundColor: '#aaa',
