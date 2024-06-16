@@ -5,18 +5,26 @@ import {Character} from '@models/Character';
 
 const name: string = 'character.action';
 
-interface stateModel {
+interface Filter {
+  name?: string;
+  status?: string;
+}
+
+interface StateModel {
   loading: boolean;
   error: string;
   info: Info;
   character: Character;
   characters: Character[];
   charactersFiltered: Character[];
-  nextUrl: string;
+  appliedFilters: Filter;
   filter: string;
+  apiErrorMessage: string | null;
+  nextUrl: string;
+  filtersApplied: boolean;
 }
 
-const initialState: stateModel = {
+const initialState: StateModel = {
   loading: false,
   error: '',
   info: {
@@ -48,75 +56,57 @@ const initialState: stateModel = {
   characters: [],
   charactersFiltered: [],
   filter: '',
+  appliedFilters: {
+    name: '',
+    status: '',
+  },
+  apiErrorMessage: null,
   nextUrl: `${process.env.API_URL}/character?page=1`,
+  filtersApplied: false,
 };
 
 export const getCharacters = createAsyncThunk(
   `${name}/GetCharacters`,
-  async (_, {getState}) => {
-    const state = getState() as {character: stateModel};
-    const url = state.character.nextUrl;
-    if (!url) {
-      throw new Error('No more pages to load');
-    }
-    const response = await characterService.getCharacters(url);
-    return response;
-  },
-);
+  async (_, {getState, rejectWithValue}) => {
+    const state = getState() as {character: StateModel};
+    const {appliedFilters, nextUrl} = state.character;
 
-export const getCharacter = createAsyncThunk(
-  `${name}/GetCharacter`,
-  async (id: string) => {
-    const response = await characterService.getCharacter(id);
-    return response;
+    let url = nextUrl;
+
+    // Construir la URL con filtros aplicados
+    const queryParams: string[] = [];
+    if (appliedFilters.name) {
+      queryParams.push(`name=${appliedFilters.name}`);
+    }
+    if (appliedFilters.status) {
+      queryParams.push(`status=${appliedFilters.status}`);
+    }
+
+    if (queryParams.length > 0) {
+      const baseUrl = nextUrl.split('?')[0];
+      const pageParam = nextUrl
+        .split('?')[1]
+        ?.split('&')
+        .find(param => param.startsWith('page='));
+      url = `${baseUrl}?${pageParam}&${queryParams.join('&')}`;
+    }
+
+    console.log('URL:', url);
+
+    try {
+      const response = await characterService.getCharacters(url);
+      return {data: response};
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.error || 'Error fetching data',
+      );
+    }
   },
 );
 
 export const characterSlice = createSlice({
   name,
   initialState,
-  extraReducers: builder => {
-    /* Getting All Characters */
-    builder.addCase(getCharacters.pending, state => {
-      state.loading = true;
-    });
-
-    builder.addCase(getCharacters.fulfilled, (state, {payload}) => {
-      state.loading = false;
-      state.info = payload.info;
-      const newResults = payload.results.filter(
-        (newCharacter: Character) =>
-          !state.characters.some(
-            existingCharacter => existingCharacter.id === newCharacter.id,
-          ),
-      );
-      state.characters = state.characters.concat(newResults);
-      state.charactersFiltered = state.characters.filter(character =>
-        character.name.toLowerCase().includes(state.filter.toLowerCase()),
-      );
-      state.nextUrl = payload.info.next;
-    });
-
-    builder.addCase(getCharacters.rejected, state => {
-      state.loading = false;
-      state.error = 'error getting answer';
-    });
-
-    /* Getting Character Detail */
-    builder.addCase(getCharacter.pending, state => {
-      state.loading = true;
-    });
-
-    builder.addCase(getCharacter.fulfilled, (state, {payload}) => {
-      state.loading = false;
-      state.character = payload;
-    });
-
-    builder.addCase(getCharacter.rejected, state => {
-      state.loading = false;
-      state.error = 'error getting answer';
-    });
-  },
   reducers: {
     filterCharacters(state, action: PayloadAction<string>) {
       state.filter = action.payload;
@@ -124,8 +114,56 @@ export const characterSlice = createSlice({
         character.name.toLowerCase().includes(action.payload.toLowerCase()),
       );
     },
+    updateFilter(state, action: PayloadAction<Filter>) {
+      state.appliedFilters = {...state.appliedFilters, ...action.payload};
+      state.characters = []; // Clear characters when filters are updated
+      state.charactersFiltered = [];
+      state.nextUrl = `${process.env.API_URL}/character?page=1`; // Reset to first page with filters
+    },
+    clearFilters(state) {
+      state.appliedFilters = {};
+      state.characters = [];
+      state.charactersFiltered = [];
+      state.nextUrl = `${process.env.API_URL}/character?page=1`; // Reset to first page
+    },
+    setFiltersApplied(state, action: PayloadAction<boolean>) {
+      state.filtersApplied = action.payload;
+    },
+  },
+  extraReducers: builder => {
+    builder.addCase(getCharacters.pending, state => {
+      state.loading = true;
+    });
+
+    builder.addCase(getCharacters.fulfilled, (state, {payload}) => {
+      state.loading = false;
+      state.apiErrorMessage = null;
+      state.info = payload.data.info;
+
+      const newResults = payload.data.results.filter(
+        (newCharacter: Character) =>
+          !state.characters.some(
+            existingCharacter => existingCharacter.id === newCharacter.id,
+          ),
+      );
+
+      state.characters = state.characters.concat(newResults);
+
+      state.charactersFiltered = state.characters.filter(character =>
+        character.name.toLowerCase().includes(state.filter.toLowerCase()),
+      );
+      state.nextUrl = payload.data.info.next || '';
+    });
+
+    builder.addCase(getCharacters.rejected, (state, action) => {
+      state.loading = false;
+      state.error = 'error getting characters';
+      state.apiErrorMessage = action.payload as string;
+    });
   },
 });
 
-export const {filterCharacters} = characterSlice.actions;
+export const {filterCharacters, updateFilter, clearFilters, setFiltersApplied} =
+  characterSlice.actions;
+
 export default characterSlice.reducer;

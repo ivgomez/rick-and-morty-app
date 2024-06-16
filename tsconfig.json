@@ -14,7 +14,8 @@
       "@components/*": ["src/components/*"],
       "@screens/*": ["src/screens/*"],
       "@ui/*": ["src/ui/*"],
-      "@hooks/*": ["src/hooks/*"]
+      "@hooks/*": ["src/hooks/*"],
+      "@contexts/*": ["src/contexts/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
