@@ -18,3 +18,8 @@ export interface Character {
   url: string;
   created: string;
 }
+
+export interface Filter {
+  name?: string;
+  status?: string;
+}

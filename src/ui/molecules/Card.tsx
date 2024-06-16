@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from 'react-native';
-import Text from '@ui/atoms/Text';
+import Text from 'ui/atoms/Text';
 
 interface Character {
   id: number;

@@ -1,19 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import {useAppDispatch, useAppSelector} from '@hooks/hooks';
+import {View, StyleSheet, ScrollView} from 'react-native';
+import {useAppDispatch, useAppSelector} from 'hooks/hooks';
 import {
   getCharacters,
   updateFilter,
   clearFilters,
   setFiltersApplied,
-} from '@store/slices/characterSlice';
+} from 'store/slices/characterSlice';
+import Text from 'ui/atoms/Text';
+import InputField from 'ui/atoms/InputField';
+import ActionButton from 'ui/molecules/ActionButton';
+import Pill from 'ui/molecules/Pill';
 
 type Props = {
   onClose: () => void;
@@ -24,18 +21,23 @@ const FilterModal: React.FC<Props> = ({onClose}) => {
   const {appliedFilters} = useAppSelector(state => state.character);
   const [name, setName] = useState<string>(appliedFilters.name || '');
   const [status, setStatus] = useState<string>(appliedFilters.status || '');
+  const [isValid, setIsValid] = useState<boolean>(false);
 
   useEffect(() => {
     setName(appliedFilters.name || '');
     setStatus(appliedFilters.status || '');
   }, [appliedFilters]);
 
+  useEffect(() => {
+    setIsValid(!!name || !!status);
+  }, [name, status]);
+
   const applyFilters = () => {
     const newFilter = {name, status};
     dispatch(updateFilter(newFilter));
     dispatch(getCharacters());
     dispatch(setFiltersApplied(true));
-    onClose(); // Close the modal after applying filters
+    onClose();
   };
 
   const clearAllFilters = () => {
@@ -44,48 +46,53 @@ const FilterModal: React.FC<Props> = ({onClose}) => {
     dispatch(clearFilters());
     dispatch(getCharacters());
     dispatch(setFiltersApplied(true));
-    onClose(); // Close the modal after clearing filters
+    onClose();
+  };
+
+  const removeFilter = (key: string) => {
+    const newFilter = {...appliedFilters, [key]: ''};
+    dispatch(updateFilter(newFilter));
+    dispatch(getCharacters());
+    dispatch(setFiltersApplied(true));
   };
 
   return (
     <View style={styles.modalContainer}>
       <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>Apply Filters</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
+        <InputField placeholder="Name" value={name} onChangeText={setName} />
+        <InputField
           placeholder="Status"
           value={status}
           onChangeText={setStatus}
         />
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={applyFilters}>
-            <Text style={styles.buttonText}>Apply</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={clearAllFilters}>
-            <Text style={styles.buttonText}>Clear</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>Close</Text>
-          </TouchableOpacity>
+          <ActionButton
+            title="Apply"
+            icon="check"
+            onPress={applyFilters}
+            disabled={!isValid}
+          />
+          <ActionButton
+            title="Clear All"
+            icon="clear"
+            onPress={clearAllFilters}
+            disabled={!Object.keys(appliedFilters).length}
+          />
+          <ActionButton title="Close" icon="close" onPress={onClose} />
         </View>
         <ScrollView style={styles.filterList} horizontal={true}>
-          {Object.keys(appliedFilters).map((key, index) => (
-            <View key={index} style={styles.filterPill}>
-              <Text style={styles.filterText}>
-                {key.charAt(0).toUpperCase() + key.slice(1)}:{' '}
-                {appliedFilters[key as keyof Filter]}
-              </Text>
-              <TouchableOpacity onPress={clearAllFilters}>
-                <Text style={styles.removeButton}>X</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+          {Object.entries(appliedFilters).map(
+            ([key, value]) =>
+              value && (
+                <Pill
+                  key={key}
+                  label={key.charAt(0).toUpperCase() + key.slice(1)}
+                  value={value}
+                  onRemove={() => removeFilter(key)}
+                />
+              ),
+          )}
         </ScrollView>
       </View>
     </View>
@@ -103,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
-    width: '80%',
+    width: 330,
     alignItems: 'center',
   },
   modalTitle: {
@@ -125,33 +132,27 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   button: {
+    flexDirection: 'row',
     backgroundColor: '#007BFF',
     borderRadius: 5,
-    padding: 10,
+    padding: 5,
+    paddingLeft: 2,
+    paddingRight: 5,
     alignItems: 'center',
-    width: '30%',
+    width: 90,
+    justifyContent: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#aaa',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
+    marginLeft: 5,
   },
   filterList: {
     marginTop: 20,
     width: '100%',
-  },
-  filterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f1f1f1',
-    borderRadius: 20,
-    padding: 10,
-    margin: 5,
-  },
-  filterText: {
-    marginRight: 10,
-  },
-  removeButton: {
-    color: '#ff0000',
   },
 });
 

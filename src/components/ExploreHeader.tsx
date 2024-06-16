@@ -8,9 +8,9 @@ import {
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useAppDispatch} from '@hooks/hooks';
-import {filterCharacters} from '@store/slices/characterSlice';
-import FilterModal from '@components/FilterModal';
+import {useAppDispatch} from 'hooks/hooks';
+import {filterCharacters} from 'store/slices/characterSlice';
+import FilterModal from 'components/FilterModal';
 
 const ExploreHeader = () => {
   const dispatch = useAppDispatch();

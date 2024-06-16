@@ -1,6 +1,6 @@
 import {NavigationProp, RouteProp} from '@react-navigation/native';
 
-type RootStackParamList = {
+export type RootStackParamList = {
   Home: undefined;
   Details: {id: string};
 };
