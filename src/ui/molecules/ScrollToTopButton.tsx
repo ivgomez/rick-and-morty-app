@@ -13,20 +13,21 @@ type Props = {
 };
 
 const ScrollToTopButton: React.FC<Props> = ({onPress, visible}) => {
-  const opacity = useSharedValue(0);
+  const rotation = useSharedValue(0);
 
   useEffect(() => {
-    opacity.value = withTiming(visible ? 1 : 0, {duration: 300});
-  }, [visible, opacity]);
+    rotation.value = withTiming(visible ? 180 : 0, {duration: 300});
+  }, [visible, rotation]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
+    transform: [{rotate: `${rotation.value}deg`}],
+    opacity: withTiming(visible ? 1 : 0, {duration: 300}),
   }));
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
       <TouchableOpacity style={styles.button} onPress={onPress}>
-        <Icon name="arrow-up" size={25} color="#fff" />
+        <Icon name="arrow-down" size={25} color="#fff" />
       </TouchableOpacity>
     </Animated.View>
   );

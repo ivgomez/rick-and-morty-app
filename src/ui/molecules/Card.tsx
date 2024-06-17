@@ -22,8 +22,15 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({character, onPress}) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.card}>
-      <Image source={{uri: character.image}} style={styles.image} />
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.card}
+      testID="card-button">
+      <Image
+        source={{uri: character.image}}
+        style={styles.image}
+        testID="character-image"
+      />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
           {character.name}

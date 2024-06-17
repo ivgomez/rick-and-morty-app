@@ -4,6 +4,7 @@ import {StateModel} from 'models/StateModel';
 import {Filter} from 'models/Character';
 import {updateCharactersState} from 'utils/characterUtils';
 import {initialState, defaultUrl} from './initialState';
+import {buildUrlWithFilters} from 'utils/helpers';
 
 const name: string = 'character.action';
 
@@ -13,25 +14,7 @@ export const getCharacters = createAsyncThunk(
     const state = getState() as {character: StateModel};
     const {appliedFilters, nextUrl} = state.character;
 
-    let url = nextUrl;
-
-    const queryParams: string[] = [];
-    if (appliedFilters.name) {
-      queryParams.push(`name=${appliedFilters.name}`);
-    }
-    if (appliedFilters.status) {
-      queryParams.push(`status=${appliedFilters.status}`);
-    }
-
-    if (queryParams.length > 0) {
-      const baseUrl = nextUrl.split('?')[0];
-      const pageParam = nextUrl
-        .split('?')[1]
-        ?.split('&')
-        .find(param => param.startsWith('page='));
-      url = `${baseUrl}?${pageParam}&${queryParams.join('&')}`;
-    }
-    console.log('url:', url);
+    const url = buildUrlWithFilters(nextUrl, appliedFilters);
 
     try {
       const response = await characterService.getCharacters(url);

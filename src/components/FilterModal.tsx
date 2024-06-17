@@ -1,11 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, ScrollView} from 'react-native';
 import {useAppDispatch, useAppSelector} from 'hooks/hooks';
 import Text from 'ui/atoms/Text';
 import InputField from 'ui/atoms/InputField';
 import ActionButton from 'ui/molecules/ActionButton';
 import Pill from 'ui/molecules/Pill';
 import {applyFilters, clearAllFilters, removeFilter} from 'utils/filterUtils';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 
 type Props = {
   onClose: () => void;
@@ -17,6 +22,12 @@ const FilterModal: React.FC<Props> = ({onClose}) => {
   const [name, setName] = useState<string>(appliedFilters.name || '');
   const [status, setStatus] = useState<string>(appliedFilters.status || '');
   const [isValid, setIsValid] = useState<boolean>(false);
+
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    opacity.value = withTiming(1, {duration: 300});
+  }, [opacity]);
 
   useEffect(() => {
     setName(appliedFilters.name || '');
@@ -39,51 +50,50 @@ const FilterModal: React.FC<Props> = ({onClose}) => {
     removeFilter(dispatch, key, appliedFilters);
   };
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
   return (
-    <View style={styles.modalContainer}>
-      <TouchableOpacity
-        style={styles.modalBackground}
-        onPress={onClose}
-        activeOpacity={1}>
-        <TouchableOpacity style={styles.modalContent} activeOpacity={1}>
-          <Text style={styles.modalTitle}>Apply Filters</Text>
-          <InputField placeholder="Name" value={name} onChangeText={setName} />
-          <InputField
-            placeholder="Status"
-            value={status}
-            onChangeText={setStatus}
+    <Animated.View style={[styles.modalContainer, animatedStyle]}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>Apply Filters</Text>
+        <InputField placeholder="Name" value={name} onChangeText={setName} />
+        <InputField
+          placeholder="Status"
+          value={status}
+          onChangeText={setStatus}
+        />
+        <View style={styles.buttonContainer}>
+          <ActionButton
+            title="Apply"
+            icon="check"
+            onPress={handleApplyFilters}
+            disabled={!isValid}
           />
-          <View style={styles.buttonContainer}>
-            <ActionButton
-              title="Apply"
-              icon="check"
-              onPress={handleApplyFilters}
-              disabled={!isValid}
-            />
-            <ActionButton
-              title="Clear All"
-              icon="clear"
-              onPress={handleClearAllFilters}
-              disabled={!Object.values(appliedFilters).some(value => value)}
-            />
-            <ActionButton title="Close" icon="close" onPress={onClose} />
-          </View>
-          <ScrollView style={styles.filterList} horizontal={true}>
-            {Object.entries(appliedFilters).map(
-              ([key, value]) =>
-                value && (
-                  <Pill
-                    key={key}
-                    label={key.charAt(0).toUpperCase() + key.slice(1)}
-                    value={value}
-                    onRemove={() => handleRemoveFilter(key)}
-                  />
-                ),
-            )}
-          </ScrollView>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </View>
+          <ActionButton
+            title="Clear All"
+            icon="clear"
+            onPress={handleClearAllFilters}
+            disabled={!Object.values(appliedFilters).some(value => value)}
+          />
+          <ActionButton title="Close" icon="close" onPress={onClose} />
+        </View>
+        <ScrollView style={styles.filterList} horizontal={true}>
+          {Object.entries(appliedFilters).map(
+            ([key, value]) =>
+              value && (
+                <Pill
+                  key={key}
+                  label={key.charAt(0).toUpperCase() + key.slice(1)}
+                  value={value}
+                  onRemove={() => handleRemoveFilter(key)}
+                />
+              ),
+          )}
+        </ScrollView>
+      </View>
+    </Animated.View>
   );
 };
 
@@ -92,13 +102,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modalBackground: {
-    flex: 1,
-    width: '100%',
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   modalContent: {
     backgroundColor: '#fff',
