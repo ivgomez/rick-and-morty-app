@@ -1,4 +1,9 @@
-import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+} from 'axios';
 
 const headers: Readonly<Record<string, string | boolean>> = {
   Accept: 'application/json',
@@ -66,7 +71,7 @@ export class BaseService {
     );
   }
 
-  private handleError(error: any) {
+  private handleError(error: AxiosError) {
     const {status} = error;
 
     switch (status) {

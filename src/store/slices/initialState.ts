@@ -1,7 +1,5 @@
 import {StateModel} from 'models/StateModel';
 
-export const defaultUrl = `${process.env.API_URL}/character?page=1`;
-
 export const initialState: StateModel = {
   loading: false,
   error: '',
@@ -39,6 +37,6 @@ export const initialState: StateModel = {
     status: '',
   },
   apiErrorMessage: null,
-  nextUrl: defaultUrl,
+  nextUrl: `${process.env.API_URL}/character?page=1`,
   filtersApplied: false,
 };

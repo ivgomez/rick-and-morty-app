@@ -3,10 +3,12 @@ import {characterService} from 'services/CharacterService';
 import {StateModel} from 'models/StateModel';
 import {Filter} from 'models/Character';
 import {updateCharactersState} from 'utils/characterUtils';
-import {initialState, defaultUrl} from './initialState';
+import {initialState} from './initialState';
 import {buildUrlWithFilters} from 'utils/helpers';
+import {isAxiosError} from 'axios';
 
 const name: string = 'character.action';
+const defaultUrl = `${process.env.API_URL}/character?page=1`;
 
 export const getCharacters = createAsyncThunk(
   `${name}/GetCharacters`,
@@ -19,10 +21,17 @@ export const getCharacters = createAsyncThunk(
     try {
       const response = await characterService.getCharacters(url);
       return {data: response};
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.error || 'Error fetching data',
-      );
+    } catch (error) {
+      if (
+        isAxiosError(error) &&
+        error.response &&
+        error.response.data &&
+        error.response.data.error
+      ) {
+        return rejectWithValue(error.response.data.error);
+      } else {
+        return rejectWithValue('Error fetching data');
+      }
     }
   },
 );

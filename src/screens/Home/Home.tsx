@@ -1,5 +1,11 @@
 import React, {useState, useRef} from 'react';
-import {SafeAreaView, FlatList, StatusBar, StyleSheet} from 'react-native';
+import {
+  SafeAreaView,
+  FlatList,
+  StyleSheet,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
 import {RootStackNavigationProp} from 'models/RootStackNavigationProps';
 import {Character} from 'models/Character';
 import ScrollToTopButton from 'ui/molecules/ScrollToTopButton';
@@ -16,7 +22,7 @@ export const Home: React.FC<Props> = ({navigation}) => {
   const {charactersFiltered, errorMessage, loadMoreCharacters} =
     useCharacters();
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     setShowScrollButton(offsetY > 300);
   };
